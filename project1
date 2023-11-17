@@ -1,0 +1,95 @@
+import time
+import random
+
+class MotorControlSystem:
+    def __init__(self, setpoint, Kp, Ki, Kd):
+        # Initialize the MotorControlSystem with setpoint and PID parameters
+        self.setpoint = setpoint
+        self.Kp = Kp
+        self.Ki = Ki
+        self.Kd = Kd
+
+        # Initialize variables for tracking current position, previous error, and integral term
+        self.current_position = 0
+        self.prev_error = 0
+        self.integral = 0
+
+    def update_position(self):
+        # Simulate the motor's movement by adding random noise
+        noise = random.uniform(-1, 1)
+        self.current_position += noise
+
+    def calculate_pid(self):
+        # Calculate the PID control signal
+        error = self.setpoint - self.current_position
+        self.integral += error
+        derivative = error - self.prev_error
+
+        # PID control equation
+        output = self.Kp * error + self.Ki * self.integral + self.Kd * derivative
+
+        # Update previous error for the next iteration
+        self.prev_error = error
+
+        return output
+
+    def calculate_p(self):
+        # Calculate the P control signal
+        error = self.setpoint - self.current_position
+        return self.Kp * error
+
+    def calculate_pi(self):
+        # Calculate the PI control signal
+        error = self.setpoint - self.current_position
+        self.integral += error
+        return self.Kp * error + self.Ki * self.integral
+
+    def calculate_pd(self):
+        # Calculate the PD control signal
+        error = self.setpoint - self.current_position
+        derivative = error - self.prev_error
+        return self.Kp * error + self.Kd * derivative
+
+    def control_motor(self, control_algorithm='pid', movement_limit=100):
+        # Control the motor until the setpoint is reached
+        while abs(self.current_position - self.setpoint) > 0.01:
+            self.update_position()
+
+            # Select the appropriate control algorithm
+            if control_algorithm == 'pid':
+                control_signal = self.calculate_pid()
+            elif control_algorithm == 'p':
+                control_signal = self.calculate_p()
+            elif control_algorithm == 'pi':
+                control_signal = self.calculate_pi()
+            elif control_algorithm == 'pd':
+                control_signal = self.calculate_pd()
+            else:
+                raise ValueError("Invalid control algorithm")
+
+            # Limit motor movement
+            self.current_position = max(0, min(movement_limit, self.current_position + control_signal))
+
+            # Apply the control signal to the motor (for simulation purposes)
+            print(f"Control Signal ({control_algorithm}): {control_signal}")
+            time.sleep(0.1)
+
+        print("Setpoint reached. Stopping motor.")
+
+
+if __name__ == "__main__":
+    # Setpoint and PID parameters
+    setpoint_position = 100  # Change the setpoint to 100
+    Kp = 1.0
+    Ki = 0.1
+    Kd = 0.01
+
+    # Create a MotorControlSystem instance
+    motor_system = MotorControlSystem(setpoint_position, Kp, Ki, Kd)
+
+    # Example: Run the motor control system with different control algorithms
+    control_algorithms = ['pid', 'p', 'pi', 'pd']
+
+    for algorithm in control_algorithms:
+        print(f"\nRunning Motor Control System with {algorithm} algorithm:")
+        motor_system.control_motor(control_algorithm=algorithm, movement_limit=100)
